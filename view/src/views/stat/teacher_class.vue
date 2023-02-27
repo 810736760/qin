@@ -18,10 +18,12 @@
 
       <template v-for="(item,index) in itemList">
         <el-table-column
+          v-if="!(seeInDialog&&item.hide)"
           :key="index"
           :label="item.label"
           :prop="item.prop"
           show-overflow-tooltip
+          :width="itemWidth(item.prop)"
           :fixed="Boolean(item.fixed)"
         >
           <template slot-scope="scope">
@@ -235,6 +237,7 @@ export default {
               type: 'text',
               prop: 'teacher_name',
               name: 'teacher_name',
+              unshow: this.seeInDialog,
               label: '教师名称',
               width: 24
             },
@@ -242,6 +245,7 @@ export default {
               type: 'text',
               prop: 'tel',
               name: 'tel',
+              unshow: this.seeInDialog,
               label: '手机号',
               width: 24
             },
@@ -322,7 +326,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'tid'
+      'tid',
+      'device'
     ]),
     baseForm() {
       return {
@@ -378,8 +383,8 @@ export default {
         { 'label': '学校', 'prop': 'school_name' },
         { 'label': '课程', 'prop': 'class_name' },
         { 'label': '周几', 'prop': 'date_index' },
-        { 'label': '老师', 'prop': 'teacher_name' },
-        { 'label': '手机号', 'prop': 'tel' },
+        { 'label': '老师', 'prop': 'teacher_name', hide: true },
+        { 'label': '手机号', 'prop': 'tel', hide: true },
         { 'label': '单价', 'prop': 'price' },
         { 'label': '上课时间', 'prop': 'time' },
         { 'label': '上课教室', 'prop': 'class_locate' }
@@ -549,7 +554,37 @@ export default {
       }).catch(() => {
         _that.loadingForm = false
       })
+    },
+    itemWidth(prop) {
+      if (this.device === 'desktop') {
+        return ''
+      }
+      let width = ''
+      // { 'label': '学校', 'prop': 'school_name' },
+      // { 'label': '课程', 'prop': 'class_name' },
+      // { 'label': '周几', 'prop': 'date_index' },
+      // { 'label': '老师', 'prop': 'teacher_name' },
+      // { 'label': '手机号', 'prop': 'tel' },
+      // { 'label': '单价', 'prop': 'price' },
+      // { 'label': '上课时间', 'prop': 'time' },
+      // { 'label': '上课教室', 'prop': 'class_locate' }
+      switch (prop) {
+        case 'school_name':
+          width = 185
+          break
+        case 'class_name':
+          width = 120
+          break
+
+        default:
+          break
+      }
+      return width
     }
+    // $_isMobile() {
+    //   const rect = body.getBoundingClientRect()
+    //   return rect.width - 1 < WIDTH
+    // }
 
   }
 }

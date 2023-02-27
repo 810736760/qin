@@ -989,4 +989,14 @@ class Tool
         }
         return 'a3c' . $randomString . 'd2s';
     }
+
+    public static function fmtHMFromSec($sec): string
+    {
+        if ($sec == 0) {
+            return '00:00';
+        }
+        $m = intval($sec / 3600);
+        $s = intval(($sec % 3600) / 60);
+        return str_pad($m, 2, 0, STR_PAD_LEFT) . ':' . str_pad($s, 2, 0, STR_PAD_LEFT);
+    }
 }

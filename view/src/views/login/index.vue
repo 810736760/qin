@@ -10,7 +10,7 @@
     >
 
       <div class="title-container">
-        <h3 class="title">投放后台</h3>
+        <h3 class="title">后台</h3>
       </div>
 
       <el-form-item prop="username">
@@ -138,7 +138,7 @@ export default {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+              this.$router.push({ path: this.redirect || '/profile/index', query: this.otherQuery })
               this.loading = false
             })
             .catch(() => {

@@ -74,7 +74,9 @@ const actions = {
         commit('SET_USER_INFO', {})
         commit('SET_EXPIRE', 0)
         resetRouter()
-        resolve('/login')
+        cookieJs.removeToken()
+        window.location.href = window.location.origin + '/login'
+        resolve()
       }).catch(error => {
         reject(error)
       })

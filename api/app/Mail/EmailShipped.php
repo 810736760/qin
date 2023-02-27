@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class FacebookEmailShipped extends Mailable
+class EmailShipped extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -35,19 +35,12 @@ class FacebookEmailShipped extends Mailable
     public function build()
     {
         switch ($this->type) {
-            case 'illegal_user':
-                return $this->markdown('email.check_illegal_user_mail')
+            case 'tc_change':
+                return $this->markdown('email.tc_change_mail')
                     ->with([
                         'content' => $this->content,
                     ])
-                    ->subject($this->title ?: 'Facebook提醒');
-                break;
-            case 'protect_waring':
-                return $this->markdown('email.protect_warning_mail')
-                    ->with([
-                        'content' => $this->content,
-                    ])
-                    ->subject($this->title ?: 'Facebook投放邮件提醒');
+                    ->subject($this->title);
                 break;
             default:
                 break;

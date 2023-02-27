@@ -2,38 +2,19 @@
 
 namespace App\Console\Commands\Test;
 
-use App\Console\Commands\Stat\SyncDayRechargeCommand;
 use App\Helper\EncryptionHelper;
 use App\Helper\Tool;
-use App\Libs\SimpleRequest;
-use App\Models\Facebook\BM;
-use App\Models\Facebook\FacebookAdAccount;
-use App\Models\Facebook\FacebookDailyBookSummaryData;
-use App\Models\Facebook\FacebookDayAdSetData;
-use App\Models\Facebook\FacebookHourAdSetData;
-use App\Models\Facebook\FacebookSet;
-use App\Models\Group;
-use App\Models\PackageConf;
-use App\Models\Stat\AbroadDayRecharge;
-use App\Models\Stat\AbroadLink;
-use App\Models\Stat\AbroadLinkStatistics;
-use App\Models\Stat\Book;
-use App\Models\Stat\DayAdSetsSummaryData;
-use App\Models\Stat\OldAdminManager;
-use App\Models\TestBook\BookTestRecord;
-use App\Services\ApiService;
-use App\Services\Common\DBService;
-use App\Services\CompanyService;
-use App\Services\Facebook\AdAccountService;
-use App\Services\Facebook\CurlService;
+
+use App\Models\TeacherClass;
 use App\Services\RedisService;
-use App\Services\Tiktok\PublicService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use \Illuminate\Support\Facades\Schema;
+use Maatwebsite\Excel\Excel;
 
 class Test extends Command
 {
@@ -43,44 +24,59 @@ class Test extends Command
 
     public function handle()
     {
-        $args = $this->arguments();
-        $start = 20220805;
-        $end = 20220807;
-        Log::info($this->description . "开始执行", $args);
-        $startTime = microtime(true);
+        $this->loadExcelForUser();
+        echo date("Ymd");
+    }
 
-        foreach (CompanyService::coList(1) as $row) {
-            if ($row['id'] != 1) {
+    public function loadExcelForUser()
+    {
+        $excel = App::make('excel');
+        $data = [];
+        $filePath = "material/" . '1.xlsx';
+        $excel->load($filePath, function ($reader) use (&$data) {
+            $data = $reader->getSheet(0)->toArray();
+        });
+        dump($data);
+        $week = [
+            '周日',
+            '周一',
+            '周二',
+            '周三',
+            '周四',
+            '周五',
+            '周六'
+
+        ];
+        $wIndex = array_flip($week);
+        foreach ($data as $index => $row) {
+            if ($index === 0) {
                 continue;
             }
-            $GLOBALS['co'] = $row['id'];
-            $systemInfos = CompanyService::systemInfo();
-            $this->ls($systemInfos, $start, $end);
+            $one = [
+                'tid'          => 1,
+                'tel'          => $row[4],
+                'school_name'  => $row[0],
+                'class_name'   => $row[1],
+                'date_index'   => $wIndex[$row[2]],
+                'teacher_name' => $row[3],
+                'price'        => $row[5] * 100,
+                'class_locate' => $row[7] ?? ''
+            ];
+            if (!empty($row[6])) {
+                $time = explode('-', $row[6]);
+                $one['start_time'] = $this->f2Sec($time[0]);
+                $one['end_time'] = $this->f2Sec($time[1]);
+            }
+            dump($one);
+            TeacherClass::getIns()->insert(
+                $one
+            );
         }
-
-        Log::info($this->description . "use time:" . (microtime(true) - $startTime), $args);
     }
 
-
-    public function ls($systemInfos, $start, $end)
+    public function f2Sec($str)
     {
-        $params = [
-            'table' => 'AbroadLinkStatistics',
-            'where' => 'date',
-            // 'fields'     => ['link_id', 'date', 'pnumber', 'pay_num', 'oneday_pay_num', 'recharge',
-            //     'oneday_money', 'primecost', 'oneday_order_num'],
-        ];
-        ApiService::getIns()->requestCommonByDate($systemInfos, $start, $end, $params, AbroadLinkStatistics::getIns());
+        $h = explode(':', $str);
+        return $h[0] * 3600 + $h[1] * 60;
     }
-    // public function abroadDayRecharge($systemInfos, $start, $end)
-    // {
-    //     $params = [
-    //         'table' => 'AbroadDayRecharge',
-    //         'where' => 'order_date',
-    //         // 'fields'     => ['link_id', 'user_date', 'order_date', 'money', 'created_at', 'updated_at'],
-    //     ];
-    //
-    //     ApiService::getIns()->requestCommonByDate($systemInfos, $start, $end, $params, AbroadDayRecharge::getIns());
-    //     dump('abroadDayRecharge is done');
-    // }
 }

@@ -8,13 +8,14 @@
 </template>
 
 <script>
-
+import ResizeMixin from '@/layout/mixin/ResizeHandler'
 import teacher_class from '@/views/stat/teacher_class'
 
 export default {
   components: {
     teacher_class
   },
+  mixins: [ResizeMixin],
   props: {},
   data() {
     return {
@@ -51,8 +52,8 @@ export default {
         ]
       },
       form: {
-        teacher_name: '',
-        tel: '',
+        tel: '18925251123',
+        teacher_name: '李四'
       },
 
     }
