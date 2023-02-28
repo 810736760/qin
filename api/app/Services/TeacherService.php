@@ -130,4 +130,44 @@ class TeacherService extends Service
         }
         TeacherClass::getIns()->updateByCond(['id' => $id], ['is_delete' => 1]);
     }
+
+    public function rebuildData($data, $tid)
+    {
+        TeacherClass::getIns()->delByCond(['tid' => $tid]);
+        $week = [
+            '周日',
+            '周一',
+            '周二',
+            '周三',
+            '周四',
+            '周五',
+            '周六'
+
+        ];
+        $wIndex = array_flip($week);
+        foreach ($data as $index => $row) {
+            if ($index === 0) {
+                continue;
+            }
+            $one = [
+                'tid'          => $tid,
+                'tel'          => $row[4],
+                'school_name'  => $row[0],
+                'class_name'   => $row[1],
+                'date_index'   => $wIndex[$row[2]],
+                'teacher_name' => $row[3],
+                'price'        => $row[5] * 100,
+                'class_locate' => $row[7] ?? ''
+            ];
+            if (!empty($row[6])) {
+                $time = explode('-', $row[6]);
+                $one['start_time'] = Tool::f2Sec($time[0]);
+                $one['end_time'] = Tool::f2Sec($time[1]);
+            }
+
+            TeacherClass::getIns()->insert(
+                $one
+            );
+        }
+    }
 }

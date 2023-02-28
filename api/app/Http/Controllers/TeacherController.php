@@ -79,4 +79,16 @@ class TeacherController extends Controller
             ReturnCode::SUCCEED
         );
     }
+
+
+    public function classTeacherExcel(Request $request)
+    {
+        $this->emptyRs($tid = $request->input('tid'));
+        $file = $request->file('file');
+        $data = Tool::excel($file);
+        TeacherService::getIns()->rebuildData($data, $tid);
+        $this->responseApi(
+            ReturnCode::SUCCEED
+        );
+    }
 }

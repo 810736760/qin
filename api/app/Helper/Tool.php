@@ -999,4 +999,28 @@ class Tool
         $s = intval(($sec % 3600) / 60);
         return str_pad($m, 2, 0, STR_PAD_LEFT) . ':' . str_pad($s, 2, 0, STR_PAD_LEFT);
     }
+
+    public static function excel($file)
+    {
+        $fileextension = $file->getClientOriginalExtension();
+        if ($fileextension != 'xlsx') {
+            return false;
+        }
+        $newName = uniqid() . '.xlsx';
+        $file->move(base_path() . '/storage/app', $newName);
+        $filePath = base_path() . '/storage/app/' . $newName;
+        $excel = App::make('excel');
+        $data = [];
+        $excel->load($filePath, function ($reader) use (&$data) {
+            $data = $reader->getSheet(0)->toArray();
+        });
+        unlink($filePath);
+        return $data;
+    }
+
+    public static function f2Sec($str)
+    {
+        $h = explode(':', $str);
+        return $h[0] * 3600 + $h[1] * 60;
+    }
 }
