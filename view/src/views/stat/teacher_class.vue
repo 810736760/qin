@@ -1,6 +1,17 @@
 <template>
   <div class="app-container">
 
+    <el-upload
+      v-show="false"
+      :before-upload="beforeUpload"
+      :action="upload_url"
+      :on-progress="onProgressUpload"
+      :on-success="onSuccess"
+      :on-error="onFailed"
+      :show-file-list="false"
+    >
+      <el-button ref="upload" size="small" type="primary">点击上传</el-button>
+    </el-upload>
     <el-row style="padding-right: 20px;margin-bottom: 20px;text-align: right">
       <search-bar
         ref="aBar"
@@ -98,6 +109,7 @@
 <script>
 
 import { mapGetters } from 'vuex'
+import CsvExport from 'csv-exportor'
 
 export default {
   components: {},
@@ -119,6 +131,8 @@ export default {
   data() {
     return {
       tableData: [],
+      autoWidth: true,
+      bookType: 'xlsx',
       termData: [],
       teacherData: [],
       schoolData: [],
@@ -183,8 +197,21 @@ export default {
           },
           {
             type: 'primary',
+            icon: 'el-icon-upload2',
+            name: '导入Excel',
+            handleClick: this.importExcel
+          },
+          {
+            type: 'primary',
+            icon: 'el-icon-download',
+            name: '导出Excel',
+            handleClick: this.exportExcel
+          },
+          {
+            type: 'primary',
             icon: 'el-icon-document-copy',
             name: '复制链接',
+            loading: false,
             handleClick: this.copy
           },
           {
@@ -265,7 +292,7 @@ export default {
               options: {
                 minTime: '11:59',
                 maxTime: '18:01',
-                step: '00:30',
+                step: '00:05',
                 start: '12:00',
                 end: '18:00'
               }
@@ -320,8 +347,9 @@ export default {
         end_time_f: '17:00'
       },
       choseIndex: 0,
-      key: ''
-
+      key: '',
+      base_url: process.env.VUE_APP_BASE_API + '/class_teacher_import_excel',
+      upload_url: ''
     }
   },
   computed: {
@@ -343,6 +371,7 @@ export default {
         class_locate: '',
         start_time_f: '16:00',
         end_time_f: '17:00'
+
       }
     },
     schoolList() {
@@ -374,6 +403,9 @@ export default {
         })
       }
       return temp
+    },
+    termMap() {
+      return this.tool.arrayColumn(this.termData, 'name', 'id')
     },
     shareMap() {
       return this.tool.arrayColumn(this.termData, 'key', 'id')
@@ -506,7 +538,7 @@ export default {
       this.dialogTitle = '新增信息'
       this.dialogFormVisible = true
       this.form = JSON.parse(JSON.stringify(this.baseForm))
-      this.form.tid = this.tid
+      this.form.tid = this.searchForm.tid
       this.choseIndex = -1
     },
     handleDelete(row) {
@@ -517,7 +549,7 @@ export default {
       })
     },
     copy() {
-      this.clipboard(window.location.origin + '/tc/' + this.shareMap[this.tid])
+      this.clipboard(window.location.origin + '/tc/' + this.shareMap[this.searchForm.tid])
       this.$message.success('复制成功')
     },
     clipboard(randomString) {
@@ -580,11 +612,74 @@ export default {
           break
       }
       return width
-    }
+    },
     // $_isMobile() {
     //   const rect = body.getBoundingClientRect()
     //   return rect.width - 1 < WIDTH
     // }
+    importExcel() {
+      this.upload_url = this.base_url + '?tid=' + this.searchForm.tid
+      this.$refs.upload.$el.click()
+    },
+    async exportExcel() {
+      if (this.totalPage > this.curSize) {
+        this.page = 1
+        this.curSize = this.totalPage
+        await this.getTable()
+      }
+      const tHeader = ['学校', '课程', '周几', '老师', '手机号', '单价', '上课时间', '上课教室']
+      const filterVal = ['school_name', 'class_name', 'date_index', 'teacher_name', 'tel', 'price', 'time', 'class_locate']
+      const list = this.tableData
+      const data = this.formatJson(filterVal, list)
+      data.unshift(tHeader)
+      CsvExport.downloadCsv(data, {}, this.termMap[this.searchForm.tid] + '.xlsx')
+    },
+    formatJson(items, data) {
+      const temp = []
+      for (const i in data) {
+        const tmp = []
+        for (const j in items) {
+          let val = ''
+          switch (items[j]) {
+            case 'date_index':
+              val = this.dateIndexMap[data[i][items[j]]]
+              break
+            case 'time':
+              val = this.tool.fmt_hms(data[i]['start_time']) + '-' + this.tool.fmt_hms(data[i]['end_time'])
+              break
+            default:
+              val = data[i][items[j]]
+              break
+          }
+          tmp.push(val)
+        }
+        temp.push(tmp)
+      }
+      return temp
+    },
+    beforeUpload(file) {
+      const testmsg = file.name.substring(file.name.lastIndexOf('.') + 1)
+      const extension = testmsg === 'xlsx'
+      if (!extension) {
+        this.$message({
+          message: '上传文件只能是.xlsx!',
+          type: 'warning'
+        })
+      }
+      return extension
+    },
+    onProgressUpload() {
+      this.searchLoading = true
+    },
+    onSuccess() {
+      this.searchLoading = false
+      this.$message.success('上传成功')
+      this.getTable()
+    },
+    onFailed() {
+      this.searchLoading = false
+      this.$message.error('上传失败')
+    }
 
   }
 }

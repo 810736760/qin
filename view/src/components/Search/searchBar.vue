@@ -980,5 +980,17 @@ export default {
 .el-form-item--small.el-form-item {
   margin-bottom: 5px !important;
 }
+
+/deep/ .el-upload {
+  display: inline;
+  text-align: center;
+  cursor: pointer;
+  outline: 0;
+}
+
+/deep/ .upload-demo {
+  display: inline;
+}
+
 </style>
 
