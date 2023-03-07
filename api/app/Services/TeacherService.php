@@ -156,12 +156,12 @@ class TeacherService extends Service
                 'class_name'   => $row[1],
                 'date_index'   => $wIndex[$row[2]],
                 'teacher_name' => $row[3],
-                'price'        => $row[5] * 100,
+                'price'        => intval($row[5]) * 100,
                 'class_locate' => $row[7] ?? ''
             ];
             if (!empty($row[6])) {
                 $time = explode('~', $row[6]);
-                if(count($time)==1){
+                if (count($time) == 1) {
                     $time = explode('-', $row[6]);
                 }
                 $one['start_time'] = Tool::f2Sec($time[0]);
