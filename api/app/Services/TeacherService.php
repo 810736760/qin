@@ -160,7 +160,10 @@ class TeacherService extends Service
                 'class_locate' => $row[7] ?? ''
             ];
             if (!empty($row[6])) {
-                $time = explode('-', $row[6]);
+                $time = explode('~', $row[6]);
+                if(count($time)==1){
+                    $time = explode('-', $row[6]);
+                }
                 $one['start_time'] = Tool::f2Sec($time[0]);
                 $one['end_time'] = Tool::f2Sec($time[1]);
             }
