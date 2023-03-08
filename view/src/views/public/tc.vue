@@ -52,8 +52,8 @@ export default {
         ]
       },
       form: {
-        tel: '18925251123',
-        teacher_name: '李四'
+        tel: '',
+        teacher_name: ''
       },
 
     }

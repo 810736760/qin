@@ -280,6 +280,7 @@ export default {
               type: 'text',
               prop: 'price',
               name: 'price',
+              // unshow: this.seeInDialog,
               label: '单价',
               width: 24
             },
@@ -306,7 +307,7 @@ export default {
               options: {
                 minTime: '11:59',
                 maxTime: '18:01',
-                step: '00:30',
+                step: '00:05',
                 start: '12:30',
                 end: '18:00'
               }
