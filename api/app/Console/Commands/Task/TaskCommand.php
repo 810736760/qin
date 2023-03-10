@@ -44,6 +44,16 @@ class TaskCommand extends Command
             'end_time'     => '结束时间',
             'class_locate' => '教室位置',
         ];
+        $week = [
+            '周日',
+            '周一',
+            '周二',
+            '周三',
+            '周四',
+            '周五',
+            '周六'
+
+        ];
         foreach ($rs as $row) {
             $old = json_decode($row['old_record'], true);
             $new = json_decode($row['new_record'], true);
@@ -53,7 +63,9 @@ class TaskCommand extends Command
                 'tel'          => $old['tel'],
                 'school_name'  => $old['school_name'],
                 'class_name'   => $old['class_name'],
-                'updated_at'   => $old['updated_at'],
+                'date'         => $week[$old['date_index']] ?? '',
+
+                'updated_at' => $old['updated_at'],
             ];
             $content = '';
             foreach ($new as $item => $val) {
